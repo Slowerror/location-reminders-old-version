@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Location Reminders</string>
+
+    <!-- Strings for LoginFragment -->
+    <string name="text_login_button">login</string>
+    <string name="title_login">Добро пожаловать в Location Reminders App</string>
 </resources>

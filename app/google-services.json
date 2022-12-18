@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "908701564836",
+    "project_id": "location-reminders-e77ea",
+    "storage_bucket": "location-reminders-e77ea.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:908701564836:android:9745b3e26c2f3a66dbcb31",
+        "android_client_info": {
+          "package_name": "com.slowerror.locationreminders"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "908701564836-vu526dvmqme6uc0aufg9ucg1a3r81hfv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.slowerror.locationreminders",
+            "certificate_hash": "613c5c08642745f1c07c922e94e4c207fbbe1f07"
+          }
+        },
+        {
+          "client_id": "908701564836-cbg5q0casnjvq0umdcig61jsmlbq0j82.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjZdBTxAi4abj0j-ZdOzDskngJnBWUO6g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "908701564836-cbg5q0casnjvq0umdcig61jsmlbq0j82.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
