@@ -17,18 +17,13 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.slowerror.locationreminders.R
 import com.slowerror.locationreminders.databinding.FragmentLoginBinding
-import com.slowerror.locationreminders.domain.usecase.login.LoginUseCase
 import timber.log.Timber
 
 class LoginFragment : Fragment() {
 
     private lateinit var binding: FragmentLoginBinding
 
-    private val loginUseCase = LoginUseCase()
-
-    private val viewModel: LoginViewModel by viewModels {
-        LoginViewModelFactory(loginUseCase)
-    }
+    private val viewModel: LoginViewModel by viewModels()
 
     private val signInLauncher = registerForActivityResult(
         FirebaseAuthUIActivityResultContract()
@@ -63,7 +58,7 @@ class LoginFragment : Fragment() {
                 LoginViewModel.AuthenticationState.UNAUTHENTICATED -> {
                     Timber.i("Пользователь не авторизован!")
                     binding.loginButton.setOnClickListener {
-                        viewModel.onLogin(signInLauncher)
+                        launchSignInFlow()
                     }
                 }
                 else -> {
@@ -74,7 +69,7 @@ class LoginFragment : Fragment() {
         }
     }
 
-    /*private fun launchSignInFlow() {
+    private fun launchSignInFlow() {
         val providers = arrayListOf(
             AuthUI.IdpConfig.EmailBuilder().build(),
             AuthUI.IdpConfig.GoogleBuilder().build()
@@ -85,7 +80,7 @@ class LoginFragment : Fragment() {
             .build()
 
         signInLauncher.launch(signInIntent)
-    }*/
+    }
 
     private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
         val response = result.idpResponse

@@ -3,14 +3,16 @@ package com.slowerror.locationreminders.presentation.ui.login
 import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.map
-import com.slowerror.locationreminders.domain.usecase.login.LoginUseCase
+import androidx.lifecycle.viewModelScope
+import com.slowerror.locationreminders.domain.model.Reminder
+import com.slowerror.locationreminders.domain.usecase.get_reminders.GetRemindersUseCase
+import kotlinx.coroutines.launch
 
-class LoginViewModel(private val loginUseCase: LoginUseCase) : ViewModel() {
-
-    /*private val loginUseCase = LoginUseCase()*/
+class LoginViewModel : ViewModel() {
 
     enum class AuthenticationState {
         AUTHENTICATED, UNAUTHENTICATED, INVALID_AUTHENTICATION
@@ -24,20 +26,4 @@ class LoginViewModel(private val loginUseCase: LoginUseCase) : ViewModel() {
         }
     }
 
-    fun onLogin(launcher: ActivityResultLauncher<Intent>) {
-        loginUseCase.invoke(launcher)
-    }
-}
-
-
-class LoginViewModelFactory(private val loginUseCase: LoginUseCase) : ViewModelProvider.Factory {
-
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
-            return LoginViewModel(loginUseCase) as T
-        } else {
-            throw IllegalArgumentException("Неизвестный ViewModel class")
-        }
-
-    }
 }
