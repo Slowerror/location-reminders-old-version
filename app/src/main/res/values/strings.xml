@@ -4,4 +4,6 @@
     <!-- Strings for LoginFragment -->
     <string name="text_login_button">login</string>
     <string name="title_login">Добро пожаловать в Location Reminders App</string>
+    <string name="fab_description">add reminder</string>
+    <string name="no_data">нет данных</string>
 </resources>

@@ -4,10 +4,10 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.slowerror.locationreminders.data.local.dto.ReminderDTO
+import com.slowerror.locationreminders.data.local.entity.ReminderEntity
 import com.slowerror.locationreminders.data.local.dao.ReminderDao
 
-@Database(version = 1, entities = [ReminderDTO::class], exportSchema = false)
+@Database(version = 1, entities = [ReminderEntity::class], exportSchema = false)
 abstract class ReminderDatabase : RoomDatabase() {
 
     abstract fun reminderDao(): ReminderDao

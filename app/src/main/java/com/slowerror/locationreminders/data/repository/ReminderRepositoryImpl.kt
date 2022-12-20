@@ -2,7 +2,9 @@ package com.slowerror.locationreminders.data.repository
 
 import com.slowerror.locationreminders.common.Resource
 import com.slowerror.locationreminders.data.local.dao.ReminderDao
-import com.slowerror.locationreminders.data.local.dto.toDomain
+import com.slowerror.locationreminders.data.local.entity.toDomain
+import com.slowerror.locationreminders.data.mapper.Mapper
+import com.slowerror.locationreminders.data.mapper.ReminderMapper
 import com.slowerror.locationreminders.domain.model.Reminder
 import com.slowerror.locationreminders.domain.repository.ReminderRepository
 import kotlinx.coroutines.CoroutineDispatcher
@@ -12,6 +14,7 @@ import java.io.IOException
 
 class ReminderRepositoryImpl(
     private val reminderDao: ReminderDao,
+    private val reminderMapper: ReminderMapper,
     private val dispatcherIO: CoroutineDispatcher = Dispatchers.IO
 ) : ReminderRepository {
 
@@ -19,7 +22,7 @@ class ReminderRepositoryImpl(
         return@withContext try {
             Resource.Success(
                 reminderDao.getReminders().map {
-                    it.toDomain()
+                    reminderMapper.mapToDomain(it)
                 }
             )
         } catch (e: IOException) {
