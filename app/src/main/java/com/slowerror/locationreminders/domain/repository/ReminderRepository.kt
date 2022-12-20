@@ -7,4 +7,5 @@ interface ReminderRepository {
 
     suspend fun getReminders(): Resource<List<Reminder>>
 
+    suspend fun saveReminder(reminder: Reminder)
 }

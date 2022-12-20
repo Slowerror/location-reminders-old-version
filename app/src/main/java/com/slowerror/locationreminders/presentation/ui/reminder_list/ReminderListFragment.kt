@@ -53,8 +53,7 @@ class ReminderListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.addReminderFab.setOnClickListener {
-            AuthUI.getInstance().signOut(requireContext())
-            findNavController().popBackStack(R.id.loginFragment, false)
+            findNavController().navigate(R.id.action_remindersFragment_to_addReminderFragment)
         }
     }
 }

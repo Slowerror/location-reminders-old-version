@@ -30,4 +30,8 @@ class ReminderRepositoryImpl(
         }
     }
 
+    override suspend fun saveReminder(reminder: Reminder) = withContext(dispatcherIO) {
+        reminderDao.saveReminder(reminderMapper.mapToData(reminder))
+    }
+
 }
