@@ -7,13 +7,11 @@ import com.slowerror.locationreminders.domain.model.Reminder
 class ReminderListViewModel : ViewModel() {
 
     private val reminder = Reminder(
-        1L,
-        "title",
-        "desc",
-        "Location",
-        1.0,
-        1.0,
-        "userId"
+        title = "title",
+        description = "desc",
+        namePoi = "Location",
+        latitude = 1.0,
+        longitude = 1.0
     )
 
     private val listReminder = mutableListOf<Reminder>()

@@ -10,4 +10,6 @@
     <string name="description">Description</string>
     <string name="reminder_location">Reminder Location</string>
     <string name="save_reminder">Save Reminder</string>
+    <string name="save_location">Save location</string>
+    <string name="default_title_marker">Неизвестное место</string>
 </resources>

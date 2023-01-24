@@ -2,8 +2,6 @@ package com.slowerror.locationreminders.data.repository
 
 import com.slowerror.locationreminders.common.Resource
 import com.slowerror.locationreminders.data.local.dao.ReminderDao
-import com.slowerror.locationreminders.data.local.entity.toDomain
-import com.slowerror.locationreminders.data.mapper.Mapper
 import com.slowerror.locationreminders.data.mapper.ReminderMapper
 import com.slowerror.locationreminders.domain.model.Reminder
 import com.slowerror.locationreminders.domain.repository.ReminderRepository

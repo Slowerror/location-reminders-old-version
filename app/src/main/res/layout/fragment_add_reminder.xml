@@ -39,6 +39,7 @@
         app:drawableStartCompat="@drawable/ic_location_on_24"
         app:layout_constraintEnd_toStartOf="@id/titleLocationTextView"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/titleLocationTextView"
         app:layout_constraintTop_toBottomOf="@id/descriptionEditText" />
 
     <TextView
@@ -50,7 +51,7 @@
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@id/addLocationTextView"
         app:layout_constraintEnd_toEndOf="@id/saveReminderFab"
-        app:layout_constraintTop_toTopOf="@id/addLocationTextView"
+        app:layout_constraintTop_toBottomOf="@id/descriptionEditText"
         tools:text="Location" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

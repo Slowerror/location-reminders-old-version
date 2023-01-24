@@ -26,5 +26,14 @@
         android:id="@+id/addReminderFragment"
         android:name="com.slowerror.locationreminders.presentation.ui.add_reminder.AddReminderFragment"
         android:label="fragment_add_reminder"
-        tools:layout="@layout/fragment_add_reminder" />
+        tools:layout="@layout/fragment_add_reminder" >
+        <action
+            android:id="@+id/action_addReminderFragment_to_selectLocationFragment"
+            app:destination="@id/selectLocationFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/selectLocationFragment"
+        android:name="com.slowerror.locationreminders.presentation.ui.select_location.SelectLocationFragment"
+        android:label="fragment_select_location"
+        tools:layout="@layout/fragment_select_location" />
 </navigation>

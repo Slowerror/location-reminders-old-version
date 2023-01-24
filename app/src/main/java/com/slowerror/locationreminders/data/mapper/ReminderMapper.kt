@@ -12,8 +12,7 @@ class ReminderMapper : Mapper<ReminderEntity, Reminder> {
             description = type.description,
             namePoi = type.namePoi,
             latitude = type.latitude,
-            longitude = type.longitude,
-            userId =  type.userId
+            longitude = type.longitude
         )
     }
 
@@ -24,8 +23,7 @@ class ReminderMapper : Mapper<ReminderEntity, Reminder> {
             description = type.description,
             namePoi = type.namePoi,
             latitude = type.latitude,
-            longitude = type.longitude,
-            userId =  type.userId
+            longitude = type.longitude
         )
     }
 }

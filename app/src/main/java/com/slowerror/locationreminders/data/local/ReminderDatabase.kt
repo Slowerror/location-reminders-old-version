@@ -10,13 +10,13 @@ import com.slowerror.locationreminders.data.local.dao.ReminderDao
 @Database(version = 1, entities = [ReminderEntity::class], exportSchema = false)
 abstract class ReminderDatabase : RoomDatabase() {
 
-    abstract fun reminderDao(): ReminderDao
+    abstract val reminderDao: ReminderDao
 
     companion object {
         @Volatile
-        private var INSTANCE: ReminderDao? = null
+        private var INSTANCE: ReminderDatabase? = null
 
-        fun getInstance(context: Context): ReminderDao {
+        fun getInstance(context: Context): ReminderDatabase {
             synchronized(this) {
                 var instance = INSTANCE
 
@@ -25,7 +25,7 @@ abstract class ReminderDatabase : RoomDatabase() {
                         context.applicationContext,
                         ReminderDatabase::class.java,
                         "locationReminders.db"
-                    ).build().reminderDao()
+                    ).fallbackToDestructiveMigration().build()
                 }
 
                 return instance

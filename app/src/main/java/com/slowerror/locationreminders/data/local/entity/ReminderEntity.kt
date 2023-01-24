@@ -3,7 +3,6 @@ package com.slowerror.locationreminders.data.local.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.slowerror.locationreminders.domain.model.Reminder
 
 @Entity(tableName = "reminders")
 data class ReminderEntity(
@@ -11,25 +10,12 @@ data class ReminderEntity(
     @ColumnInfo(name = "entry_id")
     val id: Long,
 
-    val title: String,
-    val description: String,
+    val title: String?,
+    val description: String?,
 
     @ColumnInfo(name = "name_poi")
-    val namePoi: String,
+    val namePoi: String?,
 
-    val latitude: Double,
-    val longitude: Double,
-    val userId: String?
+    val latitude: Double?,
+    val longitude: Double?
 )
-
-fun ReminderEntity.toDomain(): Reminder {
-    return Reminder(
-        id = id,
-        title = title,
-        description = description,
-        namePoi = namePoi,
-        latitude = latitude,
-        longitude = longitude,
-        userId =  userId
-    )
-}
