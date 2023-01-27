@@ -26,14 +26,13 @@ class AddReminderViewModel : ViewModel() {
     private val _lng = MutableLiveData<Double?>()
     val lng: LiveData<Double?> = _lng
 
-    private val _location = MutableLiveData<Location?>()
-    val location: LiveData<Location?> = _location
+    /*private val _location = MutableLiveData<Location?>()
+    val location: LiveData<Location?> = _location*/
 
     private var reminder: Reminder
 
     init {
         reminder = Reminder(
-            id = 1L,
             title = titleReminder.value,
             description = descriptionReminder.value,
             namePoi = nameMarker.value,
@@ -42,9 +41,11 @@ class AddReminderViewModel : ViewModel() {
         )
     }
 
-    fun getMarker(location: Location) {
-        Timber.i("${location.title}")
-        _location.value = location
+    fun getMarker(title: String?, lat: Double?, lng: Double?) {
+        Timber.i("AddReminderViewModel getMarker: $title")
+        _nameMarker.value = title
+        _lat.value = lat
+        _lng.value = lng
     }
 
     fun save(name: String?, desc: String?) {
@@ -52,8 +53,11 @@ class AddReminderViewModel : ViewModel() {
     }
 
     fun clearLocation() {
-        _location.value = null
     }
+
+    fun isNullableParams() =
+        !(_nameMarker.value == null || _lat.value == null || _lng.value == null)
+
 
     override fun onCleared() {
         super.onCleared()

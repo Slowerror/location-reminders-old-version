@@ -5,22 +5,22 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.navGraphViewModels
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import com.google.android.material.snackbar.Snackbar
 import com.google.maps.android.ktx.addMarker
 import com.google.maps.android.ktx.awaitMap
 import com.google.maps.android.ktx.awaitMapLoad
 import com.slowerror.locationreminders.R
 import com.slowerror.locationreminders.databinding.FragmentSelectLocationBinding
-import com.slowerror.locationreminders.presentation.model.Location
 import com.slowerror.locationreminders.presentation.ui.add_reminder.AddReminderViewModel
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -29,11 +29,11 @@ class SelectLocationFragment : Fragment() {
 
     private lateinit var binding: FragmentSelectLocationBinding
 
-    private val viewModel: AddReminderViewModel by activityViewModels()
+    private val viewModel: AddReminderViewModel by navGraphViewModels(R.id.addReminder_nav_graph)
 
-    private var location: Location? = null
-
-    /*private var isSetMarker = false*/
+    private var title: String? = null
+    private var lat: Double? = null
+    private var lng: Double? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,27 +48,36 @@ class SelectLocationFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.location.observe(viewLifecycleOwner) {
-            location = it
+        viewModel.nameMarker.observe(viewLifecycleOwner) {
+            title = it
+        }
+        viewModel.lat.observe(viewLifecycleOwner) {
+            lat = it
+        }
+        viewModel.lng.observe(viewLifecycleOwner) {
+            lng = it
         }
 
-        Timber.i("location: ${location?.title}")
-        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-
         viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.CREATED) {
+
+            val mapFragment =
+                childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
+
                 val googleMap = mapFragment.awaitMap()
 
-                if (location != null) {
-                    val latLng = LatLng(location?.lat as Double, location?.lng  as Double)
+                if ((title != null && lat != null && lng != null)) {
+                    val latLng = LatLng(lat as Double, lng as Double)
+                    val tt = title
                     googleMap.addMarker {
+                        title(tt)
                         position(latLng)
-                        title(location!!.title)
-
                     }
                 }
 
                 googleMap.awaitMapLoad()
+
                 setMapSettings(googleMap)
             }
         }
@@ -79,15 +88,8 @@ class SelectLocationFragment : Fragment() {
     }
 
     private fun saveLocation() {
-        if (location != null) {
-            /* setFragmentResult(
-                 "requestKey",
-                 bundleOf(
-                     "bundleKey" to point?.title,
-                     "bundleLat" to point?.position?.latitude,
-                     "bundleLng" to point?.position?.longitude
-                 )
-             )*/
+        if ((title != null && lat != null && lng != null)) {
+            viewModel.getMarker(title, lat, lng)
             findNavController().popBackStack()
         } else {
             Snackbar.make(requireView(), "Установите маркер", Snackbar.LENGTH_SHORT)
@@ -114,19 +116,8 @@ class SelectLocationFragment : Fragment() {
                 title(getString(R.string.default_title_marker))
             }
 
-//            isSetMarker = true
-
             Timber.i("Маркер в Лонг: ${marker?.title} ${marker?.position}")
-
-            viewModel.getMarker(
-                Location(
-                    marker?.title,
-                    marker?.position?.latitude,
-                    marker?.position?.longitude
-                )
-            )
-
-            Timber.i("Маркер в Лонг: ${marker?.title} ${marker?.position}")
+            putDataLocation(marker)
         }
     }
 
@@ -139,25 +130,38 @@ class SelectLocationFragment : Fragment() {
                 title(poi.name)
             }
 
-//            isSetMarker = true
-
             Timber.i("Маркер в ПОИ: ${marker?.title} ${marker?.position}")
-            viewModel.getMarker(
-                Location(
-                    marker?.title,
-                    marker?.position?.latitude,
-                    marker?.position?.longitude
-                )
-            )
-            Timber.i("Маркер в ПОИ: ${marker?.title} ${marker?.position}")
+            marker?.showInfoWindow()
+            putDataLocation(marker)
         }
     }
 
     private fun setOnClick(map: GoogleMap) {
         map.setOnMapClickListener {
-            location = null
+
+            title = null
+            lat = null
+            lng = null
+
+            /*viewModel.getMarker(title = null,
+            lat = null,
+            lng = null)*/
+
             map.clear()
         }
+    }
+
+    private fun putDataLocation(marker: Marker?) {
+        /*viewModel.getMarker(
+            marker?.title,
+            marker?.position?.latitude,
+            marker?.position?.longitude
+        )*/
+        title = marker?.title
+        lat = marker?.position?.latitude
+        lng = marker?.position?.longitude
+
+        Timber.i("Маркер в putDataLocation: $title $lat")
     }
 
 }

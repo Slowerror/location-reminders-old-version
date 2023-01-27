@@ -43,8 +43,18 @@ class LoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        Timber.i("LoginFragment onViewCreated")
         onObserveAuthState()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        Timber.i("LoginFragment onDestroyView")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Timber.i("LoginFragment onDestroy")
     }
 
     private fun onObserveAuthState() {

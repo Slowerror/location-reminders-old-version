@@ -12,4 +12,5 @@
     <string name="save_reminder">Save Reminder</string>
     <string name="save_location">Save location</string>
     <string name="default_title_marker">Неизвестное место</string>
+    <string name="logout">выход</string>
 </resources>
