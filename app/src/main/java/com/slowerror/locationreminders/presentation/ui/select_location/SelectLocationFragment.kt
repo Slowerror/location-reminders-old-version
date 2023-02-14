@@ -1,27 +1,23 @@
 package com.slowerror.locationreminders.presentation.ui.select_location
 
-import android.Manifest
 import android.annotation.SuppressLint
-import android.content.IntentSender
 import android.location.Location
-import android.os.Build
 import androidx.fragment.app.Fragment
 import android.os.Bundle
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.RequiresApi
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
-import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
@@ -32,9 +28,9 @@ import com.google.maps.android.ktx.awaitMapLoad
 import com.slowerror.locationreminders.R
 import com.slowerror.locationreminders.databinding.FragmentSelectLocationBinding
 import com.slowerror.locationreminders.presentation.ui.add_reminder.AddReminderViewModel
-import com.slowerror.locationreminders.presentation.utils.DefaultUserLocation
-import com.slowerror.locationreminders.presentation.utils.hasLocationPermission
-import com.slowerror.locationreminders.presentation.utils.hasGpsEnabled
+import com.slowerror.locationreminders.presentation.utils.*
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -43,17 +39,37 @@ class SelectLocationFragment : Fragment() {
     private lateinit var binding: FragmentSelectLocationBinding
     private val viewModel: AddReminderViewModel by navGraphViewModels(R.id.addReminder_nav_graph)
 
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationPermissionRequest: ActivityResultLauncher<Array<String>>
+    private val registerRequestPermissions: RegisterRequestPermissions by lazy {
+        RegisterRequestPermissions(requireContext(), locationPermissionRequest, requireView())
+    }
 
-    private lateinit var userLocation: DefaultUserLocation
+    private val gpsUtil: GpsUtil by lazy { GpsUtil(requireContext()) }
+    private val userLocationUtil: UserLocationUtil by lazy {
+        UserLocationUtil(
+            requireContext(),
+            viewLifecycleOwner.lifecycleScope
+        )
+    }
 
-    private lateinit var lastLocation: LatLng
+    private var locationFlow: Job? = null
 
     private lateinit var googleMap: GoogleMap
+    private lateinit var lastLocation: Location
 
     private var titleMarker: String? = null
     private var latMarker: Double? = null
     private var lngMarker: Double? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        locationPermissionRequest = registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            registerRequestPermissions.processPermissions(permissions)
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -61,74 +77,64 @@ class SelectLocationFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentSelectLocationBinding.inflate(inflater, container, false)
-
         return binding.root
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
-        userLocation =
-            DefaultUserLocation(requireContext(), requireActivity(), fusedLocationClient)
+        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        observeViewModels()
 
-        viewModel.nameMarker.observe(viewLifecycleOwner) {
-            titleMarker = it
-        }
+        binding.myLocationFab.setOnClickListener { checkPermissionsAndGps() }
 
-        viewModel.lat.observe(viewLifecycleOwner) {
-            latMarker = it
-        }
-
-        viewModel.lng.observe(viewLifecycleOwner) {
-            lngMarker = it
-        }
-
-        binding.myLocationFab.setOnClickListener {
-            getCurrentLocation()
-        }
-
-        binding.saveLocationFab.setOnClickListener {
-            saveLocation()
-        }
+        binding.saveLocationFab.setOnClickListener { saveLocation() }
 
         viewLifecycleOwner.lifecycleScope.launch {
-
-            val mapFragment =
-                childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-            googleMap = mapFragment.awaitMap()
-            googleMap.awaitMapLoad()
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
+                googleMap = mapFragment.awaitMap()
+                enableMarker()
+                googleMap.awaitMapLoad()
 
-                if (isNullableMarker()) {
-                    val latLng = LatLng(latMarker as Double, lngMarker as Double)
-                    val name = titleMarker
-
-                    googleMap.addMarker {
-                        title(name)
-                        position(latLng)
-                    }
-                }
-
-                setOnPoiClick(googleMap)
-                setOnLongClick(googleMap)
-                setOnClick(googleMap)
+                formatMap()
+                getLocationData()
             }
         }
     }
 
-    private fun saveLocation() {
-        if (isNullableMarker()) {
-            viewModel.saveMarker(
-                title = titleMarker,
-                lat = latMarker,
-                lng = lngMarker
-            )
-            findNavController().popBackStack()
-        } else {
-            Snackbar.make(requireView(), "Установите маркер", Snackbar.LENGTH_SHORT)
-                .show()
+    @SuppressLint("MissingPermission")
+    override fun onResume() {
+        super.onResume()
+        Timber.i("onResume is called")
+
+        if (::googleMap.isInitialized) {
+            enableMyLocation()
+            getLocationData()
+        }
+
+    }
+
+    @SuppressLint("MissingPermission")
+    override fun onPause() {
+        super.onPause()
+        Timber.i("onPause is called")
+        stopGetLocationUpdate()
+    }
+
+
+    /* ============ Настройки карты ============ */
+    private fun formatMap() {
+        googleMap.apply {
+            isBuildingsEnabled = false
+            uiSettings.isMapToolbarEnabled = false
+            uiSettings.isMyLocationButtonEnabled = false
+            uiSettings.isCompassEnabled = false
+
+            enableMyLocation()
+
+            setOnPoiClick(this)
+            setOnLongClick(this)
+            setOnClick(this)
         }
     }
 
@@ -172,139 +178,104 @@ class SelectLocationFragment : Fragment() {
         }
     }
 
+    private fun enableMarker() {
+        if (isNullableMarker()) {
+            val latLng = LatLng(latMarker as Double, lngMarker as Double)
+            val name = titleMarker
+
+            googleMap.addMarker {
+                title(name)
+                position(latLng)
+            }
+        }
+    }
+
+    private fun isNullableMarker(): Boolean =
+        !(titleMarker == null || latMarker == null || lngMarker == null)
+
     private fun putDataLocation(marker: Marker?) {
         titleMarker = marker?.title
         latMarker = marker?.position?.latitude
         lngMarker = marker?.position?.longitude
     }
 
-    private fun isNullableMarker(): Boolean =
-        !(titleMarker == null || latMarker == null || lngMarker == null)
-
-    @RequiresApi(Build.VERSION_CODES.M)
     @SuppressLint("MissingPermission")
-    private fun getCurrentLocation() {
-        if (requireContext().hasLocationPermission()) {
-            if (requireContext().hasGpsEnabled()) {
+    private fun enableMyLocation() {
+        if (!googleMap.isMyLocationEnabled && requireContext().hasLocationPermissions()) {
+            Timber.i("enableMyLocation was called")
+            googleMap.isMyLocationEnabled = true
+        }
+    }
+    /* ============ --------------- ============ */
 
-                googleMap.isMyLocationEnabled = true
-                googleMap.uiSettings.isMyLocationButtonEnabled = false
 
-                fusedLocationClient.lastLocation.addOnCompleteListener { task ->
-                    val location = task.result
-                    if (location == null) {
-                        requestNewLocationData()
-                    } else {
-//                        lastLocation = location
-                        val lastLatLng = LatLng(location.latitude, location.longitude)
+    private fun observeViewModels() {
+        with(viewModel) {
+            nameMarker.observe(viewLifecycleOwner) { titleMarker = it }
+            lat.observe(viewLifecycleOwner) { latMarker = it }
+            lng.observe(viewLifecycleOwner) { lngMarker = it }
+        }
+    }
 
-                        googleMap.animateCamera(
-                            CameraUpdateFactory.newLatLngZoom(
-                                lastLatLng,
-                                DEFAULT_ZOOM_LEVEL
-                            )
-                        )
-                    }
-                }
-            } else {
-                userLocation.locationSettings()
+    private fun checkPermissionsAndGps() {
+        Timber.i("invokeLocation() was called")
+        when {
+            !requireContext().hasLocationPermissions() -> {
+                registerRequestPermissions.checkPermissions()
             }
+            !requireContext().hasGpsEnabled() -> {
+                gpsUtil.turnOnGps()
+            }
+            requireContext().hasGpsEnabled() -> {
+                moveCameraToMyLocation()
+            }
+        }
+    }
 
-        } else {
-            requireActivity().requestPermissions(
-                arrayOf(
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ), 101
+    private fun moveCameraToMyLocation() {
+        if (::lastLocation.isInitialized) {
+            googleMap.animateCamera(
+                CameraUpdateFactory.newLatLngZoom(
+                    LatLng(lastLocation.latitude, lastLocation.longitude),
+                    DEFAULT_ZOOM_LEVEL
+                )
             )
         }
     }
 
-    @SuppressLint("MissingPermission")
-    private fun requestNewLocationData() {
-        val locationRequest = LocationRequest.Builder(
-            Priority.PRIORITY_HIGH_ACCURACY, DEFAULT_INTERVAL_MILLIS
-        ).build()
-
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
-        fusedLocationClient.requestLocationUpdates(
-            locationRequest,
-            locationCallback,
-            Looper.myLooper()
-        )
-    }
-
-    private val locationCallback = object : LocationCallback() {
-        override fun onLocationResult(locationResult: LocationResult) {
-            val location: Location = locationResult.lastLocation as Location
-            lastLocation = LatLng(location.latitude, location.longitude)
+    private fun saveLocation() {
+        if (isNullableMarker()) {
+            viewModel.saveMarker(
+                title = titleMarker,
+                lat = latMarker,
+                lng = lngMarker
+            )
+            findNavController().popBackStack()
+        } else {
+            Snackbar.make(requireView(), "Установите маркер", Snackbar.LENGTH_SHORT)
+                .show()
         }
     }
 
-    @SuppressLint("MissingPermission")
-    /*private fun locationEnabled(map: GoogleMap) {
-        if (requireContext().hasLocationPermission()) {
-            map.isMyLocationEnabled = true
-
-            val locationManager =
-                requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
-            val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-            val isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-
-            if (!isGpsEnabled) {
-                locationSettings()
-            }
-
-            fusedLocationClient.lastLocation.addOnSuccessListener(requireActivity()) { location ->
-                if (location != null) {
-                    lastLocation = location
-                    val lastLatLng = LatLng(location.latitude, location.longitude)
-
-                    map.animateCamera(
-                        CameraUpdateFactory.newLatLngZoom(
-                            lastLatLng,
-                            DEFAULT_ZOOM_LEVEL
-                        )
-                    )
-                } *//*else {
-                    val moscow = LatLng(55.756, 37.617)
-                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(moscow, DEFAULT_ZOOM_LEVEL))
-                }*//*
-            }
-        }
-    }*/
-
-    private fun locationSettings() {
-
-        val locationRequest = LocationRequest.Builder(
-            Priority.PRIORITY_HIGH_ACCURACY,
-            DEFAULT_INTERVAL_MILLIS
-        )
-
-        val builder = LocationSettingsRequest.Builder()
-            .addLocationRequest(locationRequest.build())
-
-        val client = LocationServices.getSettingsClient(requireContext())
-        val task = client.checkLocationSettings(builder.build())
-
-        task.addOnFailureListener { exception ->
-            if (exception is ResolvableApiException) {
-                try {
-                    exception.startResolutionForResult(requireActivity(), REQUEST_CHECK_SETTINGS)
-                } catch (_: IntentSender.SendIntentException) {
-
+    private fun getLocationData() {
+        if (requireContext().hasLocationPermissions() && requireContext().hasGpsEnabled()) {
+            Timber.i("getLocationData was called")
+            locationFlow = userLocationUtil.getLocationUpdates()
+                .flowWithLifecycle(viewLifecycleOwner.lifecycle, Lifecycle.State.STARTED)
+                .catch { e ->
+                    e.printStackTrace()
+                    Timber.d("exception: $e")
                 }
-            }
+                .onEach { location ->
+                    lastLocation = location
+                    Timber.i("lastLocation: $lastLocation")
+                }
+                .launchIn(viewLifecycleOwner.lifecycleScope)
         }
     }
 
-    companion object {
-        private const val DEFAULT_ZOOM_LEVEL = 15f
-        private const val DEFAULT_INTERVAL_MILLIS = 10000L
-        private const val REQUEST_CHECK_SETTINGS = 100
-
+    private fun stopGetLocationUpdate() {
+        if (!requireContext().hasGpsEnabled())
+            locationFlow?.cancel()
     }
-
-
 }
