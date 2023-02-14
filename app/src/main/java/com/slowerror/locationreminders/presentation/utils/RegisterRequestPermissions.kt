@@ -12,6 +12,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import androidx.core.content.ContextCompat.startActivity
 import com.google.android.material.snackbar.Snackbar
+import com.slowerror.locationreminders.R
 import timber.log.Timber
 
 class RegisterRequestPermissions(
@@ -29,9 +30,9 @@ class RegisterRequestPermissions(
                 Timber.i("coarse location is called")
 
                 AlertDialog.Builder(context)
-                    .setTitle("Разрешение на точное местоположение")
-                    .setMessage("Приложению нужно знать точное местоположение, чтобы правильно расчитывать расстояние до отмеченных меток")
-                    .setPositiveButton("Настроить") { dialogInterface, _ ->
+                    .setTitle(context.getString(R.string.dialog_title_access_fine_location))
+                    .setMessage(context.getString(R.string.dialog_message_access_coarse_location))
+                    .setPositiveButton(context.getString(R.string.dialog_positive_button_configure)) { dialogInterface, _ ->
                         val intent = getAppSettingsIntent()
                         startActivity(context, intent, null)
                         dialogInterface.dismiss()
@@ -43,10 +44,10 @@ class RegisterRequestPermissions(
                 val intent = getAppSettingsIntent()
                 Snackbar.make(
                     view,
-                    "У приложения нет доступа к местоположению",
+                    context.getString(R.string.snackbar_message_no_access_location),
                     Snackbar.LENGTH_LONG
                 )
-                    .setAction("Настройки") {
+                    .setAction(context.getString(R.string.settings)) {
                         startActivity(context, intent, null)
                     }.show()
             }
@@ -78,12 +79,12 @@ class RegisterRequestPermissions(
                     }.show()*/
 
                 AlertDialog.Builder(context)
-                    .setTitle("Нужно ваше разрешение")
-                    .setMessage("Приложению нужно знать ваше местоположение, чтобы отображать его на карте и расчитывать расстояние до отмеченных меток")
-                    .setNegativeButton("Нет, спасибо") { dialogInterface, _ ->
+                    .setTitle(context.getString(R.string.dialog_title_need_your_request))
+                    .setMessage(context.getString(R.string.dialog_message_permission_rationale))
+                    .setNegativeButton(context.getString(R.string.dialog_negative_button_no_thanks)) { dialogInterface, _ ->
                         dialogInterface.cancel()
                     }
-                    .setPositiveButton("Настроить") { dialogInterface, _ ->
+                    .setPositiveButton(context.getString(R.string.dialog_positive_button_configure)) { dialogInterface, _ ->
                         locationPermissionRequest.launch(
                             arrayOf(
                                 Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -94,7 +95,7 @@ class RegisterRequestPermissions(
                     }.create().show()
             }
             else -> {
-                Timber.i("Запрос пермишенов")
+                Timber.i(context.getString(R.string.request_permissions))
                 locationPermissionRequest.launch(
                     arrayOf(
                         Manifest.permission.ACCESS_COARSE_LOCATION,
