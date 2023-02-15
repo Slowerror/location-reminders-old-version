@@ -93,7 +93,7 @@ class SelectLocationFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
                 googleMap = mapFragment.awaitMap()
-                enableMarker()
+                setSavedMarker()
                 googleMap.awaitMapLoad()
 
                 formatMap()
@@ -108,19 +108,12 @@ class SelectLocationFragment : Fragment() {
         Timber.i("onResume is called")
 
         if (::googleMap.isInitialized) {
+            Timber.i("onResume: googleMap.isInitialized")
             enableMyLocation()
             getLocationData()
         }
 
     }
-
-    @SuppressLint("MissingPermission")
-    override fun onPause() {
-        super.onPause()
-        Timber.i("onPause is called")
-        stopGetLocationUpdate()
-    }
-
 
     /* ============ Настройки карты ============ */
     private fun formatMap() {
@@ -178,8 +171,8 @@ class SelectLocationFragment : Fragment() {
         }
     }
 
-    private fun enableMarker() {
-        if (isNullableMarker()) {
+    private fun setSavedMarker() {
+        if (markerIsNotNull()) {
             val latLng = LatLng(latMarker as Double, lngMarker as Double)
             val name = titleMarker
 
@@ -187,10 +180,11 @@ class SelectLocationFragment : Fragment() {
                 title(name)
                 position(latLng)
             }
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM_LEVEL))
         }
     }
 
-    private fun isNullableMarker(): Boolean =
+    private fun markerIsNotNull(): Boolean =
         !(titleMarker == null || latMarker == null || lngMarker == null)
 
     private fun putDataLocation(marker: Marker?) {
@@ -244,7 +238,7 @@ class SelectLocationFragment : Fragment() {
     }
 
     private fun saveLocation() {
-        if (isNullableMarker()) {
+        if (markerIsNotNull()) {
             viewModel.saveMarker(
                 title = titleMarker,
                 lat = latMarker,
@@ -258,8 +252,12 @@ class SelectLocationFragment : Fragment() {
     }
 
     private fun getLocationData() {
-        if (requireContext().hasLocationPermissions() && requireContext().hasGpsEnabled()) {
-            Timber.i("getLocationData was called")
+        if (!requireContext().hasLocationPermissions() || !requireContext().hasGpsEnabled()) {
+            return
+        }
+        Timber.i("getLocationData: permissions and gps success")
+        if(locationFlow?.isActive != true) {
+            Timber.i("getLocationData: locationFlow?.isActive != true")
             locationFlow = userLocationUtil.getLocationUpdates()
                 .flowWithLifecycle(viewLifecycleOwner.lifecycle, Lifecycle.State.STARTED)
                 .catch { e ->
@@ -272,10 +270,6 @@ class SelectLocationFragment : Fragment() {
                 }
                 .launchIn(viewLifecycleOwner.lifecycleScope)
         }
-    }
-
-    private fun stopGetLocationUpdate() {
-        if (!requireContext().hasGpsEnabled())
-            locationFlow?.cancel()
+        
     }
 }
