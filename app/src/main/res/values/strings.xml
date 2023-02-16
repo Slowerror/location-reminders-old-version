@@ -1,3 +1,32 @@
 <resources>
     <string name="app_name">Location Reminders</string>
+
+    <!-- Strings for LoginFragment -->
+    <string name="text_login_button">login</string>
+    <string name="title_login">Добро пожаловать в Location Reminders App</string>
+    <string name="fab_description">add reminder</string>
+    <string name="no_data">нет данных</string>
+    <string name="reminder_title">Reminder Title</string>
+    <string name="description">Description</string>
+    <string name="reminder_location">Reminder Location</string>
+    <string name="save_reminder">Save Reminder</string>
+    <string name="save_location">Save location</string>
+    <string name="my_location">My location button</string>
+    <string name="default_title_marker">Без названия</string>
+    <string name="logout">выход</string>
+
+
+    <string name="dialog_message_access_coarse_location">Приложению нужно знать точное местоположение, чтобы правильно расчитывать расстояние до отмеченных меток</string>
+    <string name="dialog_message_permission_rationale">Приложению нужно знать ваше местоположение, чтобы отображать его на карте и расчитывать расстояние до отмеченных меток</string>
+
+    <string name="dialog_title_need_your_request">Нужно ваше разрешение</string>
+    <string name="dialog_title_access_fine_location">Разрешение на точное местоположение</string>
+
+    <string name="dialog_negative_button_no_thanks">Нет, спасибо</string>
+    <string name="dialog_positive_button_configure">Настроить</string>
+
+    <string name="request_permissions">Запрос пермишенов</string>
+    <string name="settings">Настройки</string>
+
+    <string name="snackbar_message_no_access_location">У приложения нет доступа к местоположению</string>
 </resources>
