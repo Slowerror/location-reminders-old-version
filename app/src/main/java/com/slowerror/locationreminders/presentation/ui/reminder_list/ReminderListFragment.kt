@@ -9,6 +9,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
@@ -20,8 +21,10 @@ import com.slowerror.locationreminders.databinding.FragmentReminderListBinding
 import com.slowerror.locationreminders.presentation.MainActivity
 import com.slowerror.locationreminders.presentation.ui.reminder_list.adapter.ReminderAdapter
 import com.slowerror.locationreminders.presentation.utils.RegisterRequestPermissions
+import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
+@AndroidEntryPoint
 class ReminderListFragment : Fragment() {
 
     private lateinit var binding: FragmentReminderListBinding
@@ -32,6 +35,8 @@ class ReminderListFragment : Fragment() {
     private val registerRequestPermissions: RegisterRequestPermissions by lazy {
         RegisterRequestPermissions(requireContext(),  locationPermissionRequest, requireView())
     }
+
+    private var message: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,6 +70,12 @@ class ReminderListFragment : Fragment() {
 
         viewModel.reminders.observe(viewLifecycleOwner) {
             adapter.submitList(it)
+            /*if (it.isNullOrEmpty()) {
+                binding.noDataTextView.visibility = View.VISIBLE
+            } else {
+                binding.noDataTextView.visibility = View.GONE
+
+            }*/
         }
 
         return binding.root
@@ -76,6 +87,11 @@ class ReminderListFragment : Fragment() {
         Timber.i("ReminderListFragment onViewCreated")
         registerRequestPermissions.checkPermissions()
         setupMenu()
+
+        viewModel.errorMessage.observe(viewLifecycleOwner) {
+            message = it
+            Timber.i("onViewCreated: error message = $message")
+        }
 
         binding.addReminderFab.setOnClickListener {
             findNavController().navigate(R.id.action_remindersFragment_to_addReminderFragment)

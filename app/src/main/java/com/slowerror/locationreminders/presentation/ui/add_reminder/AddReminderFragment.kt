@@ -12,18 +12,17 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.navGraphViewModels
 import com.slowerror.locationreminders.R
 import com.slowerror.locationreminders.databinding.FragmentAddReminderBinding
+import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
+@AndroidEntryPoint
 class AddReminderFragment : Fragment() {
 
     private lateinit var binding: FragmentAddReminderBinding
 
-    private val viewModel: AddReminderViewModel by navGraphViewModels(R.id.addReminder_nav_graph)
-
-    private val locationPermissionRequest = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions(),
-        ::onGotPermissionsResultForLocation
-    )
+    private val viewModel: AddReminderViewModel by navGraphViewModels(R.id.addReminder_nav_graph){
+        defaultViewModelProviderFactory
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,20 +41,33 @@ class AddReminderFragment : Fragment() {
             binding.titleLocationTextView.text = it
         }
 
+
         binding.addLocationTextView.setOnClickListener {
             findNavController().navigate(R.id.action_addReminderFragment_to_selectLocationFragment)
         }
 
         binding.saveReminderFab.setOnClickListener {
-            locationPermissionRequest.launch(
-                arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
-            )
+            val title = binding.titleReminderEditText.text.toString()
+            val description = binding.descriptionEditText.text.toString()
+
+            viewModel.saveReminder(title, description)
+            findNavController().popBackStack()
         }
     }
 
-    private fun onGotPermissionsResultForLocation(grantResult: Map<String, Boolean>) {
-        if (grantResult.entries.all { it.value }) {
-            Toast.makeText(requireContext(), "Пермишены вызваны", Toast.LENGTH_SHORT).show()
+    /*private fun observeViewModels() {
+        with(viewModel) {
+            nameMarker.observe(viewLifecycleOwner) { binding.titleLocationTextView.text = it }
+            nameMarker.observe(viewLifecycleOwner) { binding.titleLocationTextView.text = it }
+            nameMarker.observe(viewLifecycleOwner) { binding.titleLocationTextView.text = it }
+            nameMarker.observe(viewLifecycleOwner) { binding.titleLocationTextView.text = it }
         }
-    }
+    }*/
+
+    /*private fun setReminder() {
+
+
+        viewModel
+    }*/
+
 }

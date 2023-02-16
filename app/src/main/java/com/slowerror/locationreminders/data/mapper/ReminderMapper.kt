@@ -2,8 +2,12 @@ package com.slowerror.locationreminders.data.mapper
 
 import com.slowerror.locationreminders.data.local.entity.ReminderEntity
 import com.slowerror.locationreminders.domain.model.Reminder
+import dagger.hilt.InstallIn
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class ReminderMapper : Mapper<ReminderEntity, Reminder> {
+@Singleton
+class ReminderMapper @Inject constructor() : Mapper<ReminderEntity, Reminder> {
 
     override fun mapToDomain(type: ReminderEntity): Reminder {
         return Reminder(

@@ -10,7 +10,7 @@ import com.slowerror.locationreminders.data.local.dao.ReminderDao
 @Database(version = 1, entities = [ReminderEntity::class], exportSchema = false)
 abstract class ReminderDatabase : RoomDatabase() {
 
-    abstract val reminderDao: ReminderDao
+    abstract fun reminderDao(): ReminderDao
 
     companion object {
         @Volatile

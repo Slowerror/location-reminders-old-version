@@ -4,10 +4,18 @@ package com.slowerror.locationreminders.presentation.ui.add_reminder
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.slowerror.locationreminders.domain.model.Reminder
+import com.slowerror.locationreminders.domain.usecase.save_reminder.SaveReminderUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
-class AddReminderViewModel : ViewModel() {
+@HiltViewModel
+class AddReminderViewModel @Inject constructor(
+    private val saveReminderUseCase: SaveReminderUseCase
+) : ViewModel() {
 
     private val _titleReminder = MutableLiveData<String?>()
     val titleReminder: LiveData<String?> = _titleReminder
@@ -24,16 +32,10 @@ class AddReminderViewModel : ViewModel() {
     private val _lng = MutableLiveData<Double?>()
     val lng: LiveData<Double?> = _lng
 
-    private var reminder: Reminder
+//    private var reminder: Reminder
 
     init {
-        reminder = Reminder(
-            title = titleReminder.value,
-            description = descriptionReminder.value,
-            namePoi = nameMarker.value,
-            latitude = lat.value,
-            longitude = lng.value
-        )
+
     }
 
     fun saveMarker(title: String?, lat: Double?, lng: Double?) {
@@ -43,8 +45,27 @@ class AddReminderViewModel : ViewModel() {
         _lng.value = lng
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        Timber.i("onCleared is called")
+    /*private fun setReminder(): Reminder {
+        return Reminder(
+            title = title,
+            description = description,
+            namePoi = nameMarker.value,
+            latitude = lat.value,
+            longitude = lng.value
+        )
+    }*/
+
+    fun saveReminder(title: String, description: String) {
+        val reminder = Reminder(
+            title = title,
+            description = description,
+            namePoi = nameMarker.value,
+            latitude = lat.value,
+            longitude = lng.value
+        )
+
+        viewModelScope.launch {
+            saveReminderUseCase.invoke(reminder)
+        }
     }
 }
