@@ -3,8 +3,11 @@ package com.slowerror.locationreminders.presentation.utils
 import android.app.Activity
 import android.content.Context
 import android.content.IntentSender
+import androidx.core.content.ContextCompat
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
+import dagger.hilt.android.internal.managers.FragmentComponentManager
+import dagger.hilt.android.internal.managers.ViewComponentManager
 import timber.log.Timber
 
 class GpsUtil(private val context: Context) {
@@ -28,7 +31,7 @@ class GpsUtil(private val context: Context) {
                     if (exception is ResolvableApiException) {
                         try {
                             exception.startResolutionForResult(
-                                context as Activity,
+                                FragmentComponentManager.findActivity(context) as Activity,
                                 GPS_REQUEST_CHECK_SETTINGS
                             )
                         } catch (sendEx: IntentSender.SendIntentException) {

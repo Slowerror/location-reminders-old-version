@@ -1,36 +1,26 @@
 package com.slowerror.locationreminders.data.repository
 
 import com.slowerror.locationreminders.common.Resource
-import com.slowerror.locationreminders.data.local.dao.ReminderDao
-import com.slowerror.locationreminders.data.mapper.ReminderMapper
 import com.slowerror.locationreminders.domain.model.Reminder
 import com.slowerror.locationreminders.domain.repository.ReminderRepository
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.IOException
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class ReminderRepositoryImpl(
-    private val reminderDao: ReminderDao,
-    private val reminderMapper: ReminderMapper,
-    private val dispatcherIO: CoroutineDispatcher = Dispatchers.IO
+class ReminderRepositoryImpl @Inject constructor(
+    private val localDataSource: LocalDataSource
 ) : ReminderRepository {
 
-    override suspend fun getReminders(): Resource<List<Reminder>> = withContext(dispatcherIO) {
-        return@withContext try {
-            Resource.Success(
-                reminderDao.getReminders().map {
-                    reminderMapper.mapToDomain(it)
-                }
-            )
-        } catch (e: IOException) {
-            Resource.Error(message = "Получена ошибка: $e")
-        }
+    override fun getReminders(): Flow<List<Reminder>> = localDataSource.getReminders()
+
+    override suspend fun saveReminder(reminder: Reminder) = localDataSource.saveReminder(reminder)
+
+    override suspend fun removeAllReminders() = localDataSource.removeAllReminders()
+
+    override suspend fun removeReminder(reminder: Reminder) {
+        localDataSource.removeReminder(reminder)
     }
 
-    override suspend fun saveReminder(reminder: Reminder) = withContext(dispatcherIO) {
-        reminderDao.saveReminder(reminderMapper.mapToData(reminder))
-    }
+    override suspend fun getReminderById(reminderId: Long): Resource<Reminder> =
+        localDataSource.getReminderById(reminderId)
 
 }

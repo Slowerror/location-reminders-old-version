@@ -1,10 +1,10 @@
-package com.slowerror.locationreminders.domain.repository
+package com.slowerror.locationreminders.data.repository
 
 import com.slowerror.locationreminders.common.Resource
 import com.slowerror.locationreminders.domain.model.Reminder
 import kotlinx.coroutines.flow.Flow
 
-interface ReminderRepository {
+interface LocalDataSource {
 
     fun getReminders(): Flow<List<Reminder>>
 

@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
@@ -13,9 +14,13 @@ import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import androidx.core.content.ContextCompat.startActivity
 import com.google.android.material.snackbar.Snackbar
 import com.slowerror.locationreminders.R
+import dagger.hilt.android.internal.managers.FragmentComponentManager
+import dagger.hilt.android.internal.managers.ViewComponentManager
+import dagger.hilt.android.qualifiers.ActivityContext
 import timber.log.Timber
+import javax.inject.Inject
 
-class RegisterRequestPermissions(
+class RegisterRequestPermissions (
     private val context: Context,
     private val locationPermissionRequest: ActivityResultLauncher<Array<String>>,
     private val view: View
@@ -54,20 +59,13 @@ class RegisterRequestPermissions(
         }
     }
 
-    private fun getAppSettingsIntent(): Intent {
-        return Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-            addCategory(Intent.CATEGORY_DEFAULT)
-            data = Uri.parse("package:" + context.packageName)
-        }
-    }
-
     fun checkPermissions() {
         when {
             context.hasLocationPermissions() -> {
                 Timber.i("Пермишены разрешены")
             }
             shouldShowRequestPermissionRationale(
-                context as Activity,
+                FragmentComponentManager.findActivity(context) as Activity,
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) -> {
                 Timber.i("Пермишены запрещены coarse")
@@ -103,6 +101,13 @@ class RegisterRequestPermissions(
                     )
                 )
             }
+        }
+    }
+
+    private fun getAppSettingsIntent(): Intent {
+        return Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            addCategory(Intent.CATEGORY_DEFAULT)
+            data = Uri.parse("package:" + context.packageName)
         }
     }
 }

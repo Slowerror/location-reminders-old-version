@@ -6,8 +6,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.slowerror.locationreminders.domain.model.Reminder
-import com.slowerror.locationreminders.domain.usecase.save_reminder.SaveReminderUseCase
+import com.slowerror.locationreminders.domain.usecase.SaveReminderUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -32,11 +33,6 @@ class AddReminderViewModel @Inject constructor(
     private val _lng = MutableLiveData<Double?>()
     val lng: LiveData<Double?> = _lng
 
-//    private var reminder: Reminder
-
-    init {
-
-    }
 
     fun saveMarker(title: String?, lat: Double?, lng: Double?) {
         Timber.i("AddReminderViewModel getMarker: $title")
@@ -45,17 +41,9 @@ class AddReminderViewModel @Inject constructor(
         _lng.value = lng
     }
 
-    /*private fun setReminder(): Reminder {
-        return Reminder(
-            title = title,
-            description = description,
-            namePoi = nameMarker.value,
-            latitude = lat.value,
-            longitude = lng.value
-        )
-    }*/
 
     fun saveReminder(title: String, description: String) {
+        Timber.i("saveReminder was called")
         val reminder = Reminder(
             title = title,
             description = description,
@@ -65,7 +53,7 @@ class AddReminderViewModel @Inject constructor(
         )
 
         viewModelScope.launch {
-            saveReminderUseCase.invoke(reminder)
+            saveReminderUseCase(reminder)
         }
     }
 }

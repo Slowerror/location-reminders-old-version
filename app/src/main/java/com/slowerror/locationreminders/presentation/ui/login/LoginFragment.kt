@@ -27,8 +27,8 @@ class LoginFragment : Fragment() {
 
     private val signInLauncher = registerForActivityResult(
         FirebaseAuthUIActivityResultContract()
-    ) { res ->
-//        this.onSignInResult(res)
+    ) { result ->
+        onSignInResult(result)
     }
 
     override fun onCreateView(
@@ -44,7 +44,10 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Timber.i("LoginFragment onViewCreated")
-        onObserveAuthState()
+//        onObserveAuthState()
+        binding.loginButton.setOnClickListener {
+            launchSignInFlow()
+        }
     }
 
     override fun onDestroyView() {
@@ -62,7 +65,6 @@ class LoginFragment : Fragment() {
             Timber.i("Текущий стате: $state")
             when (state) {
                 LoginViewModel.AuthenticationState.AUTHENTICATED -> {
-
                     findNavController().navigate(R.id.remindersFragment)
                 }
                 LoginViewModel.AuthenticationState.UNAUTHENTICATED -> {
@@ -84,6 +86,7 @@ class LoginFragment : Fragment() {
             AuthUI.IdpConfig.EmailBuilder().build(),
             AuthUI.IdpConfig.GoogleBuilder().build()
         )
+
         val signInIntent = AuthUI.getInstance()
             .createSignInIntentBuilder()
             .setAvailableProviders(providers)
@@ -96,9 +99,9 @@ class LoginFragment : Fragment() {
         val response = result.idpResponse
 
         if (result.resultCode == RESULT_OK) {
-            /*val user = FirebaseAuth.getInstance().currentUser
+            val user = FirebaseAuth.getInstance().currentUser
             Timber.i("Авторизация успешна! Пользователь: ${user?.displayName} и его id ${user?.uid}")
-            findNavController().navigate(R.id.remindersFragment)*/
+            findNavController().navigate(R.id.remindersFragment)
         } else {
             Timber.i("Не удалось авторизироваться. Ошибка: ${response?.error?.errorCode}")
         }

@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -29,15 +30,18 @@ import com.slowerror.locationreminders.R
 import com.slowerror.locationreminders.databinding.FragmentSelectLocationBinding
 import com.slowerror.locationreminders.presentation.ui.add_reminder.AddReminderViewModel
 import com.slowerror.locationreminders.presentation.utils.*
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class SelectLocationFragment : Fragment() {
 
     private lateinit var binding: FragmentSelectLocationBinding
-    private val viewModel: AddReminderViewModel by navGraphViewModels(R.id.addReminder_nav_graph)
+    private val viewModel: AddReminderViewModel by hiltNavGraphViewModels(R.id.addReminder_nav_graph)
 
     private lateinit var locationPermissionRequest: ActivityResultLauncher<Array<String>>
     private val registerRequestPermissions: RegisterRequestPermissions by lazy {
@@ -45,6 +49,7 @@ class SelectLocationFragment : Fragment() {
     }
 
     private val gpsUtil: GpsUtil by lazy { GpsUtil(requireContext()) }
+
     private val userLocationUtil: UserLocationUtil by lazy {
         UserLocationUtil(
             requireContext(),
@@ -221,6 +226,7 @@ class SelectLocationFragment : Fragment() {
                 gpsUtil.turnOnGps()
             }
             requireContext().hasGpsEnabled() -> {
+                getLocationData()
                 moveCameraToMyLocation()
             }
         }

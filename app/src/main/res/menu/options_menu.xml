@@ -4,5 +4,10 @@
     <item
         android:id="@+id/logoutItem"
         android:title="@string/logout"
+        android:icon="@drawable/ic_logout_24"
         app:showAsAction="always" />
+
+    <item
+        android:id="@+id/removeReminders"
+        android:title="@string/remove_all_reminders" />
 </menu>
