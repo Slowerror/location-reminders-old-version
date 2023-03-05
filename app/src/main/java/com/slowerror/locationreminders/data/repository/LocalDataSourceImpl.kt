@@ -6,10 +6,8 @@ import com.slowerror.locationreminders.data.mapper.ReminderMapper
 import com.slowerror.locationreminders.di.scope.IoDispatcher
 import com.slowerror.locationreminders.domain.model.Reminder
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import java.io.IOException
 import javax.inject.Inject
@@ -20,12 +18,39 @@ class LocalDataSourceImpl @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : LocalDataSource {
 
-    override fun getReminders(): Flow<List<Reminder>> {
-        return reminderDao.getReminders().map { list ->
-            list.map { item ->
-                reminderMapper.mapToDomain(item)
+    override fun getReminders(): Flow<Resource<List<Reminder>>> = flow {
+        try {
+            val flow = reminderDao.getReminders().flowOn(ioDispatcher)
+
+            flow.collect {
+                emit(Resource.Loading())
+                delay(1500)
+                emit(Resource.Success(it.map { reminderEntity ->
+                    reminderMapper.mapToDomain(reminderEntity)
+                }))
             }
-        }.flowOn(ioDispatcher)
+        } catch (cause: Throwable) {
+            cause.printStackTrace()
+            delay(1500)
+            emit(Resource.Error(cause.message))
+        }
+
+        /*reminderDao.getReminders()
+            .onEach {
+                emit(Resource.Loading())
+                delay(1500)
+
+                emit(Resource.Success(it.map { reminderEntity ->
+                    reminderMapper.mapToDomain(reminderEntity)
+                }))
+            }
+            .catch { cause: Throwable ->
+                delay(1500)
+                emit(Resource.Error(cause.message))
+            }
+            .flowOn(ioDispatcher)
+            .collect()*/
+
     }
 
     override suspend fun saveReminder(reminder: Reminder) = withContext(ioDispatcher) {
@@ -40,18 +65,18 @@ class LocalDataSourceImpl @Inject constructor(
         reminderDao.deleteReminder(reminderMapper.mapToData(reminder))
     }
 
-    override suspend fun getReminderById(reminderId: Long): Resource<Reminder> =
-        withContext(ioDispatcher) {
-            return@withContext try {
-                Resource.Success(
-                    reminderMapper.mapToDomain(
-                        reminderDao.getReminderById(reminderId = reminderId)
-                    )
+    override suspend fun getReminderById(reminderId: Long): Resource<Reminder> = TODO()
+    /*withContext(ioDispatcher) {
+        return@withContext try {
+            Resource.Success(
+                reminderMapper.mapToDomain(
+                    reminderDao.getReminderById(reminderId = reminderId)
                 )
-            } catch (e: IOException) {
-                Resource.Error(message = "Получена ошибка: $e")
-            }
-
+            )
+        } catch (e: IOException) {
+            Resource.Error(message = "Получена ошибка: $e")
         }
+
+    }*/
 
 }

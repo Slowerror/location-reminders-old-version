@@ -3,6 +3,7 @@ package com.slowerror.locationreminders.presentation.ui.reminder_list
 import android.content.Intent
 import android.os.Bundle
 import android.view.*
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
@@ -15,13 +16,16 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.firebase.ui.auth.AuthUI
 import com.slowerror.locationreminders.R
+import com.slowerror.locationreminders.common.Resource
 import com.slowerror.locationreminders.databinding.FragmentReminderListBinding
 import com.slowerror.locationreminders.presentation.MainActivity
 import com.slowerror.locationreminders.presentation.ui.reminder_list.adapter.ReminderAdapter
 import com.slowerror.locationreminders.presentation.utils.RegisterRequestPermissions
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -30,6 +34,7 @@ class ReminderListFragment : Fragment() {
     private lateinit var binding: FragmentReminderListBinding
 
     private val viewModel: ReminderListViewModel by viewModels()
+    private lateinit var reminderAdapter: ReminderAdapter
 
     private lateinit var locationPermissionRequest: ActivityResultLauncher<Array<String>>
     private val registerRequestPermissions: RegisterRequestPermissions by lazy {
@@ -59,16 +64,45 @@ class ReminderListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Timber.i("ReminderListFragment onViewCreated")
-        val adapter = setReminderAdapter()
+        initAdapter()
         registerRequestPermissions.checkPermissions()
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.uiState
-                .flowWithLifecycle(viewLifecycleOwner.lifecycle, Lifecycle.State.STARTED)
-                .collect {
-                    adapter.submitList(it)
+        viewModel.uiState
+            .flowWithLifecycle(viewLifecycleOwner.lifecycle, Lifecycle.State.STARTED)
+            .onEach { result ->
+                Timber.i("UiState was called")
+                binding.noDataTextView.visibility = View.GONE
+                when (result) {
+                    is Resource.Error -> {
+                        binding.progressBar.visibility = View.GONE
+                        Toast.makeText(
+                            requireContext(),
+                            "Упс, не удалось загрузить данные ${result.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        binding.noDataTextView.visibility =
+                            if (result.data.isNullOrEmpty())
+                                View.VISIBLE
+                            else
+                                View.GONE
+                    }
+                    is Resource.Loading -> {
+                        binding.progressBar.visibility = View.VISIBLE
+                    }
+                    is Resource.Success -> {
+                        binding.progressBar.visibility = View.GONE
+                        Timber.i("Resource.Success: ${result.data}")
+                        binding.noDataTextView.visibility =
+                            if (result.data.isNullOrEmpty())
+                                View.VISIBLE
+                            else
+                                View.GONE
+                        reminderAdapter.submitList(result.data)
+                    }
                 }
-        }
+            }
+            .launchIn(viewLifecycleOwner.lifecycleScope)
 
         setupMenu()
 
@@ -85,15 +119,12 @@ class ReminderListFragment : Fragment() {
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                Timber.i("Menu was called")
                 return when (menuItem.itemId) {
                     R.id.logoutItem -> {
-                        Timber.i("menu: logoutItem was called")
                         logout()
                         true
                     }
                     R.id.removeReminders -> {
-                        Timber.i("menu: removeReminders was called")
                         viewModel.removeReminders()
                         true
                     }
@@ -104,12 +135,12 @@ class ReminderListFragment : Fragment() {
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
-    private fun setReminderAdapter(): ReminderAdapter {
-        val adapter = ReminderAdapter()
-        val linearLayout = LinearLayoutManager(requireContext())
-
-        binding.reminderRw.layoutManager = linearLayout
-        binding.reminderRw.adapter = adapter
+    private fun initAdapter() {
+        reminderAdapter = ReminderAdapter()
+        reminderAdapter.apply {
+            binding.reminderRw.adapter = reminderAdapter
+            binding.reminderRw.layoutManager = LinearLayoutManager(requireContext())
+        }
 
         binding.reminderRw.addItemDecoration(
             DividerItemDecoration(
@@ -117,14 +148,16 @@ class ReminderListFragment : Fragment() {
                 DividerItemDecoration.VERTICAL
             )
         )
-        return adapter
     }
 
     private fun logout() {
-        val intent = Intent(requireContext(), MainActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        startActivity(intent)
-        requireActivity().finish()
+        AuthUI.getInstance().signOut(requireContext())
+            .addOnCompleteListener {
+                val intent = Intent(requireContext(), MainActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                startActivity(intent)
+                requireActivity().finish()
+            }
     }
 
 }

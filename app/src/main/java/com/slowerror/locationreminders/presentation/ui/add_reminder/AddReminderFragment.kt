@@ -54,7 +54,7 @@ class AddReminderFragment : Fragment() {
 
             viewLifecycleOwner.lifecycleScope.launch {
                 viewModel.saveReminder(title, description)
-                delay(3000)
+                delay(500)
                 findNavController().popBackStack(R.id.remindersFragment, false)
             }
 

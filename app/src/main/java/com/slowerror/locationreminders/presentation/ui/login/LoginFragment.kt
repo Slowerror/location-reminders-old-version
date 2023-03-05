@@ -28,7 +28,7 @@ class LoginFragment : Fragment() {
     private val signInLauncher = registerForActivityResult(
         FirebaseAuthUIActivityResultContract()
     ) { result ->
-        onSignInResult(result)
+//        onSignInResult(result)
     }
 
     override fun onCreateView(
@@ -44,20 +44,7 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Timber.i("LoginFragment onViewCreated")
-//        onObserveAuthState()
-        binding.loginButton.setOnClickListener {
-            launchSignInFlow()
-        }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        Timber.i("LoginFragment onDestroyView")
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Timber.i("LoginFragment onDestroy")
+        onObserveAuthState()
     }
 
     private fun onObserveAuthState() {
