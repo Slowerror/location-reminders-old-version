@@ -21,6 +21,9 @@
         <action
             android:id="@+id/action_remindersFragment_to_addReminderFragment"
             app:destination="@id/addReminder_nav_graph" />
+        <action
+            android:id="@+id/action_remindersFragment_to_reminderDetailsFragment"
+            app:destination="@id/reminderDetailsFragment" />
     </fragment>
     <navigation android:id="@+id/addReminder_nav_graph"
         app:startDestination="@id/addReminderFragment">
@@ -39,4 +42,14 @@
             android:label="fragment_select_location"
             tools:layout="@layout/fragment_select_location" />
     </navigation>
+    <fragment
+        android:id="@+id/reminderDetailsFragment"
+        android:name="com.slowerror.locationreminders.presentation.ui.reminder_detail.ReminderDetailsFragment"
+        android:label="fragment_reminder_details"
+        tools:layout="@layout/fragment_reminder_details" >
+        <argument
+            android:name="idReminder"
+            app:argType="long"
+            android:defaultValue="0L" />
+    </fragment>
 </navigation>

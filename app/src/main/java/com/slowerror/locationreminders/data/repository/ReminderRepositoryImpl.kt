@@ -13,6 +13,9 @@ class ReminderRepositoryImpl @Inject constructor(
 
     override fun getReminders(): Flow<Resource<List<Reminder>>> = localDataSource.getReminders()
 
+    override fun getReminderById(reminderId: Long): Flow<Resource<Reminder>> =
+        localDataSource.getReminderById(reminderId)
+
     override suspend fun saveReminder(reminder: Reminder) = localDataSource.saveReminder(reminder)
 
     override suspend fun removeAllReminders() = localDataSource.removeAllReminders()
@@ -20,8 +23,5 @@ class ReminderRepositoryImpl @Inject constructor(
     override suspend fun removeReminder(reminder: Reminder) {
         localDataSource.removeReminder(reminder)
     }
-
-    override suspend fun getReminderById(reminderId: Long): Resource<Reminder> =
-        localDataSource.getReminderById(reminderId)
 
 }

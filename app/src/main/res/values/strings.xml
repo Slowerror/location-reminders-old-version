@@ -2,16 +2,16 @@
     <string name="app_name">Location Reminders</string>
 
     <!-- Strings for LoginFragment -->
-    <string name="text_login_button">login</string>
+    <string name="text_login_button">войти</string>
     <string name="title_login">Добро пожаловать в Location Reminders App</string>
-    <string name="fab_description">add reminder</string>
+    <string name="fab_description">добавить напоминание</string>
     <string name="no_data">список напоминаний пуст,\nнажмите на +, чтобы добавить новое</string>
-    <string name="reminder_title">Reminder Title</string>
-    <string name="description">Description</string>
+    <string name="reminder_title">Заголовок</string>
+    <string name="description">Описание</string>
     <string name="reminder_location">Reminder Location</string>
-    <string name="save_reminder">Save Reminder</string>
-    <string name="save_location">Save location</string>
-    <string name="my_location">My location button</string>
+    <string name="save_reminder">сохранить напоминание</string>
+    <string name="save_location">Сохранить локацию</string>
+    <string name="my_location">Мое местоположение</string>
     <string name="default_title_marker">Без названия</string>
     <string name="logout">выход</string>
 
@@ -30,4 +30,5 @@
 
     <string name="snackbar_message_no_access_location">У приложения нет доступа к местоположению</string>
     <string name="remove_all_reminders">удалить все напоминания</string>
+    <string name="location">Локация</string>
 </resources>

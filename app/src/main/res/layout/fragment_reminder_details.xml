@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+
+    android:padding="@dimen/default_padding_x0_5"
+    tools:context=".presentation.ui.reminder_detail.ReminderDetailsFragment">
+
+    <TextView
+        android:id="@+id/titleReminder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/reminder_title"
+        android:textSize="@dimen/default_item_title_text_size" />
+
+    <TextView
+        android:id="@+id/contentTitleReminder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/default_padding_x0_5"
+        android:paddingBottom="@dimen/default_padding_x0_5"
+        android:textSize="@dimen/default_item_location_text_size"
+        tools:text="@string/reminder_title" />
+
+    <TextView
+        android:id="@+id/titleLocationReminder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/location"
+        android:textSize="@dimen/default_item_title_text_size" />
+
+    <TextView
+        android:id="@+id/contentLocationReminder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/default_padding_x0_5"
+        android:paddingBottom="@dimen/default_padding_x0_5"
+        android:textSize="@dimen/default_item_location_text_size"
+        tools:text="@string/location" />
+
+    <TextView
+        android:id="@+id/titleDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/description"
+        android:textSize="@dimen/default_item_title_text_size" />
+
+    <TextView
+        android:id="@+id/contentDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/default_padding_x0_5"
+        android:paddingBottom="@dimen/default_padding_x0_5"
+        android:textSize="@dimen/default_item_location_text_size"
+        tools:text="@string/description" />
+
+    <ProgressBar
+        android:id="@+id/pbReminder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:padding="@dimen/default_padding" />
+
+</LinearLayout>

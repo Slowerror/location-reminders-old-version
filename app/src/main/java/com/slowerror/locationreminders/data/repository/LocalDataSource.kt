@@ -8,11 +8,11 @@ interface LocalDataSource {
 
     fun getReminders(): Flow<Resource<List<Reminder>>>
 
+    fun getReminderById(reminderId: Long): Flow<Resource<Reminder>>
+
     suspend fun saveReminder(reminder: Reminder)
 
     suspend fun removeAllReminders()
 
     suspend fun removeReminder(reminder: Reminder)
-
-    suspend fun getReminderById(reminderId: Long): Resource<Reminder>
 }

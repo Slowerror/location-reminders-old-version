@@ -10,11 +10,14 @@ class ReminderViewHolder private constructor(
     private val binding: ItemReminderBinding
 ) : RecyclerView.ViewHolder(binding.root) {
 
-    fun bind(reminder: Reminder) {
+    fun bind(reminder: Reminder, reminderClickListener: ReminderClickListener) {
         binding.title.text = reminder.title
         binding.description.text = reminder.description
         binding.location.text = reminder.namePoi
 
+        itemView.setOnClickListener {
+            reminderClickListener.onClick(reminder.id)
+        }
     }
 
     companion object {

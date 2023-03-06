@@ -65,18 +65,18 @@ class LocalDataSourceImpl @Inject constructor(
         reminderDao.deleteReminder(reminderMapper.mapToData(reminder))
     }
 
-    override suspend fun getReminderById(reminderId: Long): Resource<Reminder> = TODO()
-    /*withContext(ioDispatcher) {
-        return@withContext try {
-            Resource.Success(
-                reminderMapper.mapToDomain(
-                    reminderDao.getReminderById(reminderId = reminderId)
-                )
-            )
-        } catch (e: IOException) {
-            Resource.Error(message = "Получена ошибка: $e")
-        }
+    override fun getReminderById(reminderId: Long): Flow<Resource<Reminder>> = flow {
+        try {
+            val flow = reminderDao.getReminderById(reminderId).flowOn(ioDispatcher)
 
-    }*/
+            flow.collect {
+                emit(Resource.Loading())
+                emit(Resource.Success(reminderMapper.mapToDomain(it)))
+            }
+        } catch (cause: Throwable) {
+            cause.printStackTrace()
+            emit(Resource.Error(cause.message))
+        }
+    }
 
 }

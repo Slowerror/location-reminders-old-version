@@ -22,6 +22,7 @@ import com.slowerror.locationreminders.common.Resource
 import com.slowerror.locationreminders.databinding.FragmentReminderListBinding
 import com.slowerror.locationreminders.presentation.MainActivity
 import com.slowerror.locationreminders.presentation.ui.reminder_list.adapter.ReminderAdapter
+import com.slowerror.locationreminders.presentation.ui.reminder_list.adapter.ReminderClickListener
 import com.slowerror.locationreminders.presentation.utils.RegisterRequestPermissions
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
@@ -136,7 +137,14 @@ class ReminderListFragment : Fragment() {
     }
 
     private fun initAdapter() {
-        reminderAdapter = ReminderAdapter()
+        reminderAdapter = ReminderAdapter(ReminderClickListener { id ->
+            findNavController().navigate(
+                ReminderListFragmentDirections.actionRemindersFragmentToReminderDetailsFragment(
+                    id
+                )
+            )
+        })
+
         reminderAdapter.apply {
             binding.reminderRw.adapter = reminderAdapter
             binding.reminderRw.layoutManager = LinearLayoutManager(requireContext())
