@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.*
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.addCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
@@ -25,6 +24,7 @@ import com.slowerror.locationreminders.databinding.FragmentReminderListBinding
 import com.slowerror.locationreminders.presentation.MainActivity
 import com.slowerror.locationreminders.presentation.ui.reminder_list.adapter.ReminderAdapter
 import com.slowerror.locationreminders.presentation.ui.reminder_list.adapter.ReminderClickListener
+import com.slowerror.locationreminders.presentation.ui.reminder_list.adapter.SwitchClickListener
 import com.slowerror.locationreminders.presentation.utils.RegisterRequestPermissions
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
@@ -38,7 +38,7 @@ class ReminderListFragment : Fragment() {
 
     private val viewModel: ReminderListViewModel by viewModels()
     private lateinit var reminderAdapter: ReminderAdapter
-
+    var isEnabled = false
     private lateinit var locationPermissionRequest: ActivityResultLauncher<Array<String>>
     private val registerRequestPermissions: RegisterRequestPermissions by lazy {
         RegisterRequestPermissions(requireContext(), locationPermissionRequest, requireView())
@@ -154,6 +154,18 @@ class ReminderListFragment : Fragment() {
                     id
                 )
             )
+        }, SwitchClickListener {
+            when (isEnabled) {
+                true -> {
+                    isEnabled = false
+                    Toast.makeText(requireContext(), "отключили", Toast.LENGTH_SHORT).show()
+                }
+                false -> {
+                    isEnabled = true
+                    Toast.makeText(requireContext(), "включили", Toast.LENGTH_SHORT).show()
+
+                }
+            }
         })
 
         reminderAdapter.apply {
