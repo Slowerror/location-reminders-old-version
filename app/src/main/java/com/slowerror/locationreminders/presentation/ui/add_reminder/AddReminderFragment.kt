@@ -1,21 +1,16 @@
 package com.slowerror.locationreminders.presentation.ui.add_reminder
 
-import android.Manifest
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.hilt.navigation.fragment.hiltNavGraphViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.navGraphViewModels
 import com.slowerror.locationreminders.R
 import com.slowerror.locationreminders.databinding.FragmentAddReminderBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -38,7 +33,6 @@ class AddReminderFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         viewModel.nameMarker.observe(viewLifecycleOwner) {
             binding.titleLocationTextView.text = it
         }
@@ -53,8 +47,10 @@ class AddReminderFragment : Fragment() {
             val description = binding.descriptionEditText.text.toString()
 
             viewLifecycleOwner.lifecycleScope.launch {
+                binding.pbReminder.visibility = View.VISIBLE
                 viewModel.saveReminder(title, description)
-                delay(500)
+                binding.pbReminder.visibility = View.GONE
+                Timber.i("viewModel.saveReminder was completed")
                 findNavController().popBackStack(R.id.remindersFragment, false)
             }
 

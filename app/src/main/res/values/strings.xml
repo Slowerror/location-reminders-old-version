@@ -31,4 +31,5 @@
     <string name="snackbar_message_no_access_location">У приложения нет доступа к местоположению</string>
     <string name="remove_all_reminders">удалить все напоминания</string>
     <string name="location">Локация</string>
+    <string name="remove">удалить</string>
 </resources>

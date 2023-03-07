@@ -1,20 +1,24 @@
 package com.slowerror.locationreminders.presentation.ui.reminder_detail
 
 import android.os.Bundle
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import com.slowerror.locationreminders.R
 import com.slowerror.locationreminders.common.Resource
 import com.slowerror.locationreminders.databinding.FragmentReminderDetailsBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @AndroidEntryPoint
 class ReminderDetailsFragment : Fragment() {
@@ -38,6 +42,7 @@ class ReminderDetailsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel.getReminderById(reminderId)
+        setupMenu()
 
         viewModel.uiState
             .flowWithLifecycle(viewLifecycleOwner.lifecycle, Lifecycle.State.STARTED)
@@ -62,11 +67,33 @@ class ReminderDetailsFragment : Fragment() {
                             contentDescription.text = result.data?.description ?: ""
                         }
 
-
                     }
                 }
             }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
+    }
+
+    private fun setupMenu() {
+        (requireActivity() as MenuHost).addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.details_menu, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.removeItem -> {
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            viewModel.removeReminder()
+                            Timber.i("viewModel.removeReminder() was completed")
+                            findNavController().popBackStack()
+                        }
+
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 }

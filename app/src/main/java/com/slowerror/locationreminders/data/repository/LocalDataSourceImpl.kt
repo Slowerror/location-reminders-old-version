@@ -9,7 +9,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
-import java.io.IOException
 import javax.inject.Inject
 
 class LocalDataSourceImpl @Inject constructor(
@@ -34,35 +33,6 @@ class LocalDataSourceImpl @Inject constructor(
             delay(1500)
             emit(Resource.Error(cause.message))
         }
-
-        /*reminderDao.getReminders()
-            .onEach {
-                emit(Resource.Loading())
-                delay(1500)
-
-                emit(Resource.Success(it.map { reminderEntity ->
-                    reminderMapper.mapToDomain(reminderEntity)
-                }))
-            }
-            .catch { cause: Throwable ->
-                delay(1500)
-                emit(Resource.Error(cause.message))
-            }
-            .flowOn(ioDispatcher)
-            .collect()*/
-
-    }
-
-    override suspend fun saveReminder(reminder: Reminder) = withContext(ioDispatcher) {
-        reminderDao.saveReminder(reminderMapper.mapToData(reminder))
-    }
-
-    override suspend fun removeAllReminders() = withContext(ioDispatcher) {
-        reminderDao.deleteAllReminders()
-    }
-
-    override suspend fun removeReminder(reminder: Reminder) = withContext(ioDispatcher) {
-        reminderDao.deleteReminder(reminderMapper.mapToData(reminder))
     }
 
     override fun getReminderById(reminderId: Long): Flow<Resource<Reminder>> = flow {
@@ -77,6 +47,18 @@ class LocalDataSourceImpl @Inject constructor(
             cause.printStackTrace()
             emit(Resource.Error(cause.message))
         }
+    }
+
+    override suspend fun saveReminder(reminder: Reminder) = withContext(ioDispatcher) {
+        reminderDao.saveReminder(reminderMapper.mapToData(reminder))
+    }
+
+    override suspend fun removeAllReminders() = withContext(ioDispatcher) {
+        reminderDao.deleteAllReminders()
+    }
+
+    override suspend fun removeReminder(reminder: Reminder) = withContext(ioDispatcher) {
+        reminderDao.deleteReminder(reminderMapper.mapToData(reminder))
     }
 
 }

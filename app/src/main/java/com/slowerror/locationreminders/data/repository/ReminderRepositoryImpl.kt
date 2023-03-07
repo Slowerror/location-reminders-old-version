@@ -4,7 +4,6 @@ import com.slowerror.locationreminders.common.Resource
 import com.slowerror.locationreminders.domain.model.Reminder
 import com.slowerror.locationreminders.domain.repository.ReminderRepository
 import kotlinx.coroutines.flow.*
-import timber.log.Timber
 import javax.inject.Inject
 
 class ReminderRepositoryImpl @Inject constructor(

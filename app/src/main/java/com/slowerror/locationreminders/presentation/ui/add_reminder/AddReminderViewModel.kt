@@ -42,7 +42,7 @@ class AddReminderViewModel @Inject constructor(
     }
 
 
-    fun saveReminder(title: String, description: String) {
+    suspend fun saveReminder(title: String, description: String) {
         Timber.i("saveReminder was called")
         val reminder = Reminder(
             title = title,
@@ -54,6 +54,6 @@ class AddReminderViewModel @Inject constructor(
 
         viewModelScope.launch {
             saveReminderUseCase(reminder)
-        }
+        }.join()
     }
 }

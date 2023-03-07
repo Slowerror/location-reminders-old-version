@@ -4,6 +4,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
@@ -65,6 +67,7 @@ class ReminderListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Timber.i("ReminderListFragment onViewCreated")
+        disableBackButton()
         initAdapter()
         registerRequestPermissions.checkPermissions()
 
@@ -72,7 +75,6 @@ class ReminderListFragment : Fragment() {
             .flowWithLifecycle(viewLifecycleOwner.lifecycle, Lifecycle.State.STARTED)
             .onEach { result ->
                 Timber.i("UiState was called")
-                binding.noDataTextView.visibility = View.GONE
                 when (result) {
                     is Resource.Error -> {
                         binding.progressBar.visibility = View.GONE
@@ -111,6 +113,15 @@ class ReminderListFragment : Fragment() {
             findNavController().navigate(R.id.action_remindersFragment_to_addReminderFragment)
         }
 
+    }
+
+    private fun disableBackButton() {
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                requireActivity().finish()
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
     }
 
     private fun setupMenu() {
